@@ -1,0 +1,81 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. BankingSystemCOBOL.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 CUSTOMER-RECORD.
+           05 CUSTOMER-ID     PIC X(10).   *> Customer ID
+           05 CUSTOMER-NAME   PIC X(50).   *> Customer Name
+           05 BALANCE         PIC 9(10)V99 VALUE 0.   *> Account Balance
+
+       01 TRANSACTION-AMOUNT   PIC 9(10)V99.   *> Amount for transactions
+
+       01 REPORT-HEADER.
+           05                  PIC X(20) VALUE 'BANKING SYSTEM REPORT'.
+           05                  PIC X(20) VALUE SPACES.
+           05                  PIC X(10) VALUE 'DATE: '.
+           05 REPORT-DATE       PIC X(10) VALUE SPACES.
+
+       01 REPORT-DETAIL.
+           05                  PIC X(10) VALUE SPACES.
+           05 'Customer ID'    PIC X(15).
+           05 'Customer Name'  PIC X(35).
+           05 'Balance'        PIC X(15).
+           05                  PIC X(10) VALUE SPACES.
+
+       01 EOF-FLAG               PIC X VALUE 'N'.   *> End of File flag
+
+       FILE SECTION.
+       FD CUSTOMER-FILE.
+       01 CUSTOMER-RECORD-OUT.
+           05 CUSTOMER-ID-OUT   PIC X(10).
+           05 CUSTOMER-NAME-OUT PIC X(50).
+           05 BALANCE-OUT       PIC 9(10)V99.
+
+       WORKING-STORAGE SECTION.
+       01 WS-FILENAME            PIC X(30) VALUE 'customer_data.txt'.   *> File name
+
+       PROCEDURE DIVISION.
+
+           OPEN INPUT CUSTOMER-FILE   *> Open input file for reading
+           OPEN OUTPUT CUSTOMER-FILE  *> Open output file for writing
+
+           MOVE SPACES TO CUSTOMER-RECORD
+           MOVE SPACES TO REPORT-DATE
+
+           DISPLAY 'Enter Date (MM/DD/YYYY): '
+           ACCEPT REPORT-DATE
+
+           PERFORM READ-CUSTOMER-FILE UNTIL EOF-FLAG = 'Y'   *> Read and process customer records
+
+           CLOSE CUSTOMER-FILE
+
+           DISPLAY 'Banking System Processing Complete.'
+           STOP RUN.
+
+       READ-CUSTOMER-FILE.
+           READ CUSTOMER-FILE
+               AT END MOVE 'Y' TO EOF-FLAG   *> If end of file is reached, set the flag to 'Y'
+               NOT AT END PERFORM PROCESS-CUSTOMER   *> Process customer record
+
+       PROCESS-CUSTOMER.
+           DISPLAY 'Customer ID: ' CUSTOMER-ID
+           DISPLAY 'Customer Name: ' CUSTOMER-NAME
+           DISPLAY 'Balance: ' BALANCE
+
+           DISPLAY 'Enter Transaction Amount for Customer ' CUSTOMER-ID ': '
+           ACCEPT TRANSACTION-AMOUNT
+
+           COMPUTE BALANCE = BALANCE + TRANSACTION-AMOUNT   *> Update account balance
+
+           MOVE CUSTOMER-ID TO CUSTOMER-ID-OUT
+           MOVE CUSTOMER-NAME TO CUSTOMER-NAME-OUT
+           MOVE BALANCE TO BALANCE-OUT
+
+           WRITE CUSTOMER-RECORD-OUT   *> Write updated record to output file
+
+           MOVE SPACES TO CUSTOMER-ID
+           MOVE SPACES TO CUSTOMER-NAME
+           MOVE SPACES TO BALANCE
+
+       END PROCESS-CUSTOMER.
